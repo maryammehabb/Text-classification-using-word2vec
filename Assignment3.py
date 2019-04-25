@@ -1,15 +1,16 @@
-from string import punctuation
 import nltk
 import os
-import sys
 import numpy as np
+import array as arr
+from string import punctuation
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 #glove
-glovebath = 'glove.6B.50d.txt'
-
+glovebath = 'glove.6B/glove.6B.50d.txt'
 
 with open(glovebath, 'r', encoding="utf8") as f:
         word_vocab = set()
@@ -62,22 +63,39 @@ for i in range(len(texts)):
     x = removepunc(texts[i])
     withoutpunc.append(x)
 
+def sumWords():
+    for i in range(len(withoutpunc)):
+        word = nltk.word_tokenize(withoutpunc[i])
+        wordsOfDoc.append(word)
+        for j in range(len(word)):
+            if word[j] in word2vector:
+                dictionary[withoutpunc[i]] = np.sum(word2vector[word[j]])
+    return dictionary
 
-for i in range(len(withoutpunc)):
-    word = nltk.word_tokenize(withoutpunc[i])
-    wordsOfDoc.append(word)
-    for j in range(len(word)):
-        if word[j] in word2vector:
-            dictionary[withoutpunc[i]] = np.sum(word2vector[word[j]])
+def avgWords():
+    for i in range(len(withoutpunc)):
+        word = nltk.word_tokenize(withoutpunc[i])
+        wordsOfDoc.append(word)
+        for j in range(len(word)):
+            if word[j] in word2vector:
+                dictionary[withoutpunc[i]] = np.average(word2vector[word[j]])
+    return dictionary
 
+print("1. Sentence embedding based on the sum of word embeddings")
+print("2. Sentence embedding based on the average of word embeddings")
+choice = input("Enter 1 or 2 please: ")
+if (choice == 1): sumWords()
+elif(choice == 2): avgWords()
 
 for i in dictionary.values():
     dicvalues.append((i))
 
 dicvalues = ([dicvalues])
-labels = ([labels])
+labels =([labels])
 print(labels)
 print(dicvalues)
+
+#vectorizer = TfidfVectorizer(stop_words='english')
 
 X_train, X_test, y_train, y_test = train_test_split(dicvalues, labels, test_size=0.25, random_state=42)
 model = LogisticRegression()
@@ -86,5 +104,14 @@ yPrediction = model.predict(X_test)
 print(yPrediction)
 x =accuracy_score(y_test, yPrediction)
 print(x)
-a = x * 100
-print(a)
+print("Accuracy: ", x*100," %")
+
+def Predict(v, m, text):
+    arroftext=[]
+    arroftext.append(text)
+    X_train = v.transform(arroftext)
+    result = m.predict(X_train)
+    print(result)
+
+text = input("Enter the text: ")
+#Predict(vectorizer, model, text)
